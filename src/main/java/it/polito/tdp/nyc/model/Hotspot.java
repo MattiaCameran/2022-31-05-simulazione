@@ -273,6 +273,16 @@ public class Hotspot {
 			return false;
 		return true;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Hotspot [objectId=" + objectId + ", borough=" + borough + ", type=" + type + ", provider=" + provider
+				+ ", name=" + name + ", location=" + location + ", latitude=" + latitude + ", longitude=" + longitude
+				+ ", location_T=" + location_T + ", city=" + city + ", SSID=" + SSID + ", sourceID=" + sourceID
+				+ ", boroCode=" + boroCode + ", boroName=" + boroName + ", NTACode=" + NTACode + ", NTAName=" + NTAName
+				+ ", postcode=" + postcode + "]";
+	}
 	
 	
 	

@@ -5,8 +5,13 @@
 package it.polito.tdp.nyc;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.nyc.model.City;
+import it.polito.tdp.nyc.model.CityDistance;
 import it.polito.tdp.nyc.model.Model;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,6 +20,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class FXMLController {
 	
@@ -39,7 +45,7 @@ public class FXMLController {
     private ComboBox<String> cmbProvider; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbQuartiere"
-    private ComboBox<?> cmbQuartiere; // Value injected by FXMLLoader
+    private ComboBox<City> cmbQuartiere; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtMemoria"
     private TextField txtMemoria; // Value injected by FXMLLoader
@@ -48,22 +54,58 @@ public class FXMLController {
     private TextArea txtResult; // Value injected by FXMLLoader
     
     @FXML // fx:id="clQuartiere"
-    private TableColumn<?, ?> clQuartiere; // Value injected by FXMLLoader
+    private TableColumn<CityDistance, String> clQuartiere; // Value injected by FXMLLoader
  
     @FXML // fx:id="clDistanza"
-    private TableColumn<?, ?> clDistanza; // Value injected by FXMLLoader
+    private TableColumn<CityDistance, Double> clDistanza; // Value injected by FXMLLoader
     
     @FXML // fx:id="tblQuartieri"
-    private TableView<?> tblQuartieri; // Value injected by FXMLLoader
+    private TableView<CityDistance> tblQuartieri; // Value injected by FXMLLoader
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	//Quando creo il grafo posso popolare la comboBox di città.
+    	
+    	//Estraggo il provider selezionato.
+    	String provider = this.cmbProvider.getValue();
+    	
+    	//Controllo errori
+    	if(provider == null) {
+    		txtResult.appendText("Errore: selezionare un provider!");
+    		return;
+    	}
+    	
+    	//Creo il grafo
+    	String msg = model.creaGrafo(provider);
+    	txtResult.appendText(msg);
+    	
+    	//Popolo la tendina dei quartieri dopo averla liberata da eventuali città di grafi precedenti.
+    	this.cmbQuartiere.getItems().clear();
+    	this.cmbQuartiere.getItems().addAll(this.model.getCities());
+    	
     	
     }
 
     @FXML
     void doQuartieriAdiacenti(ActionEvent event) {
     	
+    	City scelto = this.cmbQuartiere.getValue();
+    	
+    	if(scelto == null) {
+    		txtResult.appendText("Seleziona un quartiere");
+    		return;
+    	}
+    	
+    	//Posso chiedere al modello di darmi la lista.
+    	List<CityDistance> distanze = model.getCityDistances(scelto);
+    	
+    	//Devo ora configurare la TableView e la TableColumn
+    	//Vedi initialize()
+    	
+    	//Creo una nuova ObservableCollections per poter impostare il valore della tabella.
+    	this.tblQuartieri.setItems(FXCollections.observableArrayList(distanze));
     }
 
     @FXML
@@ -83,10 +125,16 @@ public class FXMLController {
         assert clDistanza != null : "fx:id=\"clDistanza\" was not injected: check your FXML file 'Scene.fxml'.";
         assert clQuartiere != null : "fx:id=\"clQuartiere\" was not injected: check your FXML file 'Scene.fxml'.";
 
+        //Devo informare le celle come stamparsi.
+        this.clQuartiere.setCellValueFactory(new PropertyValueFactory<CityDistance, String>("nome"));
+        this.clDistanza.setCellValueFactory(new PropertyValueFactory<CityDistance, Double>("distanza"));
     }
     
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	//Qua popolo la tendina di providers
+    	cmbProvider.getItems().addAll(this.model.getProviders());
     }
 
 }
